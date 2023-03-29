@@ -11,13 +11,13 @@ public class Gun : MonoBehaviour
         Reloading
     }
     public State state { get; private set; }
-    
-    private PlayerShooter gunHolder;
-    private LineRenderer bulletLineRenderer;
-    
-    private AudioSource gunAudioPlayer;
+
+    private AudioSource audioSource;
     public AudioClip shotClip;
     public AudioClip reloadClip;
+
+    private PlayerShooter gunHolder;
+    private LineRenderer bulletLineRenderer;
     
     public ParticleSystem muzzleFlashEffect;
     public ParticleSystem shellEjectEffect;
@@ -49,9 +49,18 @@ public class Gun : MonoBehaviour
 
     private void Awake()
     {
+
+        audioSource = GetComponent<AudioSource>();
         bulletLineRenderer = GetComponent<LineRenderer>();
         bulletLineRenderer.positionCount = 2;
         bulletLineRenderer.enabled = false;
+    }
+
+    private void Start()
+    {
+        state = State.Ready;
+        magAmmo = magCapacity;
+        lastFireTime = 0f;
     }
 
     public void Setup(PlayerShooter gunHolder)
@@ -69,7 +78,7 @@ public class Gun : MonoBehaviour
         StopAllCoroutines();
     }
 
-    public bool Fire(Vector3 aimTarget)
+    public bool Fire()
     {
         //발사시도
         if (state == State.Ready && Time.time >= lastFireTime + timeBetFire)
@@ -103,27 +112,41 @@ public class Gun : MonoBehaviour
         }
 
         StartCoroutine(ShotEffect(hitPosition));
+        magAmmo--;
+        if (magAmmo <= 0)
+        {
+            state = State.Empty;
+        }
     }
 
     private IEnumerator ShotEffect(Vector3 hitPosition)
     {
+        audioSource.clip = shotClip;
+        audioSource.Play();
+
         muzzleFlashEffect.Play();
         shellEjectEffect.Play();
         bulletLineRenderer.SetPosition(0, fireTransform.position);
         bulletLineRenderer.SetPosition(1, hitPosition);
+        bulletLineRenderer.enabled = true;
+
         yield return new WaitForSeconds(bulletLineEffectTime);
+
         bulletLineRenderer.enabled = false;
     }
     
     public bool Reload()
     {
-        return false;
+        if (state == State.Reloading || magAmmo >= magCapacity) { return false; }
+        StartCoroutine(ReloadRoutine());
+        return true;
     }
 
     private IEnumerator ReloadRoutine()
     {
         state = State.Reloading;
         yield return new WaitForSeconds(reloadTime);
+        magAmmo = magCapacity;
         state = State.Ready;
     }
 

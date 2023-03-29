@@ -3,31 +3,19 @@
 
 public class PlayerShooter : MonoBehaviour
 {
-    public enum AimState
-    {
-        Idle,
-        HipFire
-    }
-
-    public AimState aimState { get; private set; }
-
     public Gun gun;
-    public LayerMask excludeTarget;
-    
     private PlayerInput playerInput;
+    private PlayerMovement playerMovement;
     private Animator playerAnimator;
     private Camera playerCamera;
     
-    private Vector3 aimPoint;
-    private bool linedUp => !(Mathf.Abs( playerCamera.transform.eulerAngles.y - transform.eulerAngles.y) > 1f);
-    private bool hasEnoughDistance => !Physics.Linecast(transform.position + Vector3.up * gun.fireTransform.position.y,gun.fireTransform.position, ~excludeTarget);
-    
     void Awake()
     {
-        if (excludeTarget != (excludeTarget | (1 << gameObject.layer)))
-        {
-            excludeTarget |= 1 << gameObject.layer;
-        }
+        playerMovement = GetComponent<PlayerMovement>();
+        playerInput = GetComponent<PlayerInput>();
+        playerAnimator = GetComponent<Animator>();
+
+        playerInput.OnFirePressed += FireButtonHandle;
     }
 
     private void Start()
@@ -46,21 +34,30 @@ public class PlayerShooter : MonoBehaviour
         gun.gameObject.SetActive(false);
     }
 
+    private void FireButtonHandle()
+    {
+        playerMovement.SetRotation();
+        gun.Fire();
+    }
+
     private void FixedUpdate()
     {
         if (playerInput.fire)
         {
-            Shoot();
+            gun.Fire();
         }
         else if (playerInput.reload)
         {
-            Reload();
+            //Reload();
         }
     }
 
     private void Update()
     {
-
+        if (playerInput.reload)
+        {
+            if (gun.Reload()) playerAnimator.SetTrigger("Reload");
+        }
     }
 
     public void Shoot()
@@ -80,12 +77,7 @@ public class PlayerShooter : MonoBehaviour
 
     private void UpdateUI()
     {
-        if (gun == null || UIManager.Instance == null) return;
         
-        UIManager.Instance.UpdateAmmoText(gun.magAmmo, gun.ammoRemain);
-        
-        UIManager.Instance.SetActiveCrosshair(hasEnoughDistance);
-        UIManager.Instance.UpdateCrossHairPosition(aimPoint);
     }
 
     private void OnAnimatorIK(int layerIndex)

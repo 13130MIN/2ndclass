@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class LivingEntity : MonoBehaviour, IDamageable
+public class LivingEntity : MonoBehaviour
 {
     public float startingHealth = 100f;
     public float health { get; protected set; }

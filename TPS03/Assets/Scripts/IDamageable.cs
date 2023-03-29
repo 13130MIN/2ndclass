@@ -1,4 +1,8 @@
-﻿public interface IDamageable
+﻿using System;
+using System.Collections.Generic;
+using UnityEngine;
+
+public interface IDamageable
 {
-    bool ApplyDamage(DamageMessage damageMessage);
+    void OnDamage(float damage, Vector3 hitPosition, Vector3 hitNormal);
 }

@@ -49,7 +49,6 @@ public class Gun : MonoBehaviour
 
     private void Awake()
     {
-
         audioSource = GetComponent<AudioSource>();
         bulletLineRenderer = GetComponent<LineRenderer>();
         bulletLineRenderer.positionCount = 2;

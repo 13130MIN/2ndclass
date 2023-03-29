@@ -52,9 +52,6 @@ public class PlayerInput : MonoBehaviour
 
     public bool GetMouseWorldPosition(out Vector3 point)
     {
-        //point에 마우스 좌표를 넣어주세요
-        //ray를 쐈을 때, 맞았으면 true, 안맞으면 false 반환
-
         //마우스 포인터 위치 받아 ray발사
         Ray cameraRay = cam.ScreenPointToRay(Input.mousePosition);
 
